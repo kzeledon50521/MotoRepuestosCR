@@ -1,0 +1,2 @@
+-- Archivo para cursores del sistema MotoRepuestosCR
+-- Aquí se agregarán los cursores PL/SQL
