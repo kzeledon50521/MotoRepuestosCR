@@ -1,1 +1,91 @@
--- 
+/* ------------------------------------------------------------
+  Procedimeintos de cliente
+   ------------------------------------------------------------ */
+
+
+/* ------------------------------------------------------------
+   Insertar Cliente
+   ------------------------------------------------------------ */
+
+CREATE OR REPLACE PROCEDURE sp_insertar_cliente (
+    p_id_cliente IN NUMBER,
+    p_nombre     IN VARCHAR2,
+    p_telefono   IN VARCHAR2,
+    p_correo     IN VARCHAR2
+)
+AS
+BEGIN
+    INSERT INTO CLIENTES (id_cliente, nombre, telefono, correo)
+    VALUES (p_id_cliente, p_nombre, p_telefono, p_correo);
+END;
+/
+
+/* ------------------------------------------------------------
+   Listar Cliente
+   ------------------------------------------------------------ */
+
+CREATE OR REPLACE PROCEDURE sp_listar_clientes (
+    p_resultado OUT SYS_REFCURSOR
+)
+AS
+BEGIN
+    OPEN p_resultado FOR
+        SELECT id_cliente, nombre, telefono, correo
+        FROM CLIENTES;
+END;
+/
+
+/* ------------------------------------------------------------
+   Buscar cliente por id
+   ------------------------------------------------------------ */
+
+CREATE OR REPLACE PROCEDURE sp_buscar_cliente_id (
+    p_id_cliente IN NUMBER,
+    p_resultado  OUT SYS_REFCURSOR
+)
+AS
+BEGIN
+    OPEN p_resultado FOR
+        SELECT id_cliente, nombre, telefono, correo
+        FROM CLIENTES
+        WHERE id_cliente = p_id_cliente;
+END;
+/
+
+/* ------------------------------------------------------------
+   Actualizar cliente
+   ------------------------------------------------------------ */
+
+CREATE OR REPLACE PROCEDURE sp_actualizar_cliente (
+    p_id_cliente IN NUMBER,
+    p_nombre     IN VARCHAR2,
+    p_telefono   IN VARCHAR2,
+    p_correo     IN VARCHAR2
+)
+AS
+BEGIN
+    UPDATE CLIENTES
+    SET nombre = p_nombre,
+        telefono = p_telefono,
+        correo = p_correo
+    WHERE id_cliente = p_id_cliente;
+END;
+/
+/* ------------------------------------------------------------
+   Eliminar cliente
+   ------------------------------------------------------------ */
+
+CREATE OR REPLACE PROCEDURE sp_eliminar_cliente (
+    p_id_cliente IN NUMBER
+)
+AS
+BEGIN
+    DELETE FROM CLIENTES
+    WHERE id_cliente = p_id_cliente;
+END;
+/
+
+
+
+
+
