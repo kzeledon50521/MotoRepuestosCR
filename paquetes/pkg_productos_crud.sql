@@ -1,28 +1,40 @@
-/*
-Package: pkg_productos_crud
-Descripción:
-Este paquete agrupa operaciones básicas relacionadas con el mantenimiento
-del catálogo de productos, como registrar nuevos repuestos o modificar su precio.
-*/
-
+/* =========================================================
+   Package: pkg_productos_crud
+   Descripción:
+   Permite insertar, actualizar y eliminar productos.
+   ========================================================= */
 CREATE OR REPLACE PACKAGE pkg_productos_crud AS
-   PROCEDURE insertar_producto(p_nombre VARCHAR2, p_desc VARCHAR2, p_cat VARCHAR2, p_precio NUMBER, p_stock NUMBER);
-   PROCEDURE actualizar_precio(p_id NUMBER, p_precio NUMBER);
-END;
+   PROCEDURE insertar_producto(p_nombre VARCHAR2,p_precio NUMBER,p_stock NUMBER,p_id_categoria NUMBER,p_id_marca NUMBER,p_id_proveedor NUMBER);
+   PROCEDURE actualizar_producto(p_id NUMBER,p_nombre VARCHAR2,p_precio NUMBER,p_stock NUMBER,p_id_categoria NUMBER,p_id_marca NUMBER,p_id_proveedor NUMBER);
+   PROCEDURE eliminar_producto(p_id NUMBER);
+END pkg_productos_crud;
 /
 
 CREATE OR REPLACE PACKAGE BODY pkg_productos_crud AS
 
-   PROCEDURE insertar_producto(p_nombre VARCHAR2, p_desc VARCHAR2, p_cat VARCHAR2, p_precio NUMBER, p_stock NUMBER) IS
+   PROCEDURE insertar_producto(p_nombre VARCHAR2,p_precio NUMBER,p_stock NUMBER,p_id_categoria NUMBER,p_id_marca NUMBER,p_id_proveedor NUMBER) IS
    BEGIN
-      INSERT INTO productos(nombre_producto, descripcion, categoria, precio, stock)
-      VALUES(p_nombre, p_desc, p_cat, p_precio, p_stock);
+      INSERT INTO Productos(nombre,precio,stock,id_categoria,id_marca,id_proveedor)
+      VALUES(p_nombre,p_precio,p_stock,p_id_categoria,p_id_marca,p_id_proveedor);
    END;
 
-   PROCEDURE actualizar_precio(p_id NUMBER, p_precio NUMBER) IS
+   PROCEDURE actualizar_producto(p_id NUMBER,p_nombre VARCHAR2,p_precio NUMBER,p_stock NUMBER,p_id_categoria NUMBER,p_id_marca NUMBER,p_id_proveedor NUMBER) IS
    BEGIN
-      UPDATE productos SET precio = p_precio WHERE id_producto = p_id;
+      UPDATE Productos
+      SET nombre = p_nombre,
+          precio = p_precio,
+          stock = p_stock,
+          id_categoria = p_id_categoria,
+          id_marca = p_id_marca,
+          id_proveedor = p_id_proveedor
+      WHERE id_producto = p_id;
    END;
 
-END;
+   PROCEDURE eliminar_producto(p_id NUMBER) IS
+   BEGIN
+      DELETE FROM Productos
+      WHERE id_producto = p_id;
+   END;
+
+END pkg_productos_crud;
 /

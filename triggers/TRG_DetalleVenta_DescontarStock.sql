@@ -1,21 +1,18 @@
 USE MotoRepuestosCR;
 GO
 
-/*
-Trigger: TRG_DetalleVenta_DescontarStock
-Descripción:
-Reduce automáticamente el stock del producto cuando se registra una venta.
-Permite mantener actualizado el inventario.
-*/
-
-CREATE TRIGGER TRG_DetalleVenta_DescontarStock
-ON detalle_venta
-AFTER INSERT
-AS
+/* =========================================================
+   Trigger: trg_detalleventa_descontar_stock
+   Descripción:
+   Descuenta automáticamente del inventario la cantidad vendida
+   cuando se registra un detalle de venta.
+   ========================================================= */
+CREATE OR REPLACE TRIGGER trg_detalleventa_descontar_stock
+AFTER INSERT ON DetalleVenta
+FOR EACH ROW
 BEGIN
-    UPDATE p
-    SET stock = stock - i.cantidad
-    FROM productos p
-    INNER JOIN inserted i ON p.id_producto = i.id_producto;
-END
-GO
+   UPDATE Productos
+   SET stock = stock - :NEW.cantidad
+   WHERE id_producto = :NEW.id_producto;
+END;
+/

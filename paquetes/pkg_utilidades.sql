@@ -1,13 +1,11 @@
-/*
-Package: pkg_utilidades
-Descripción:
-Contiene funciones auxiliares generales que pueden ser utilizadas
-en diferentes procesos del sistema.
-*/
-
+/* =========================================================
+   Package: pkg_utilidades
+   Descripción:
+   Funciones generales del sistema.
+   ========================================================= */
 CREATE OR REPLACE PACKAGE pkg_utilidades AS
    FUNCTION obtener_fecha RETURN DATE;
-END;
+END pkg_utilidades;
 /
 
 CREATE OR REPLACE PACKAGE BODY pkg_utilidades AS
@@ -17,5 +15,5 @@ CREATE OR REPLACE PACKAGE BODY pkg_utilidades AS
       RETURN SYSDATE;
    END;
 
-END;
+END pkg_utilidades;
 /

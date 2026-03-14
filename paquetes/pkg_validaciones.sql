@@ -1,20 +1,22 @@
-/*
-Package: pkg_validaciones
-Descripción:
-Incluye funciones que ayudan a validar condiciones del negocio,
-como verificar si existe stock suficiente antes de una venta.
-*/
-
+/* =========================================================
+   Package: pkg_validaciones
+   Descripción:
+   Funciones de validación del sistema.
+   ========================================================= */
 CREATE OR REPLACE PACKAGE pkg_validaciones AS
-   FUNCTION validar_stock(p_producto NUMBER, p_cantidad NUMBER) RETURN NUMBER;
-END;
+   FUNCTION validar_stock(p_producto NUMBER,p_cantidad NUMBER) RETURN NUMBER;
+END pkg_validaciones;
 /
 
 CREATE OR REPLACE PACKAGE BODY pkg_validaciones AS
 
-   FUNCTION validar_stock(p_producto NUMBER, p_cantidad NUMBER) RETURN NUMBER IS v_stock NUMBER;
+   FUNCTION validar_stock(p_producto NUMBER,p_cantidad NUMBER) RETURN NUMBER IS
+      v_stock NUMBER;
    BEGIN
-      SELECT stock INTO v_stock FROM productos WHERE id_producto = p_producto;
+      SELECT stock INTO v_stock
+      FROM Productos
+      WHERE id_producto = p_producto;
+
       IF v_stock >= p_cantidad THEN
          RETURN 1;
       ELSE
@@ -22,5 +24,5 @@ CREATE OR REPLACE PACKAGE BODY pkg_validaciones AS
       END IF;
    END;
 
-END;
+END pkg_validaciones;
 /

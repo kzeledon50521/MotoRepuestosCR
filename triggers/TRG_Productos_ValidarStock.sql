@@ -1,21 +1,17 @@
 USE MotoRepuestosCR;
 GO
 
-/*
-Trigger: TRG_Productos_ValidarStock
-Descripción:
-Impide registrar productos con stock negativo.
-*/
-
-CREATE TRIGGER TRG_Productos_ValidarStock
-ON productos
-AFTER INSERT, UPDATE
-AS
+/* =========================================================
+   Trigger: trg_productos_validar_stock
+   Descripción:
+   Impide insertar o actualizar productos con stock negativo.
+   ========================================================= */
+CREATE OR REPLACE TRIGGER trg_productos_validar_stock
+BEFORE INSERT OR UPDATE ON Productos
+FOR EACH ROW
 BEGIN
-    IF EXISTS (SELECT 1 FROM inserted WHERE stock < 0)
-    BEGIN
-        RAISERROR('El stock no puede ser negativo.',16,1);
-        ROLLBACK TRANSACTION;
-    END
-END
-GO
+   IF :NEW.stock < 0 THEN
+      RAISE_APPLICATION_ERROR(-20003, 'El stock no puede ser negativo.');
+   END IF;
+END;
+/
