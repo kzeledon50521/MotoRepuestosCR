@@ -1,0 +1,46 @@
+PROYECTO: MotoRepuestos CR S.A.
+
+INSTRUCCIONES DE EJECUCIÓN
+
+1. REQUISITOS:
+- Oracle Database (XE recomendado)
+- SQL Developer o herramienta similar
+- Visual Studio (para la aplicación C#)
+- Oracle.ManagedDataAccess instalado
+
+2. BASE DE DATOS:
+- Ejecutar el archivo: script_completo.sql
+- Este archivo contiene:
+  * Creación de tablas
+  * Procedimientos almacenados
+  * Funciones
+  * Cursores
+  * Paquetes
+  * Triggers
+  * Vistas
+
+3. CONFIGURACIÓN DE CONEXIÓN:
+- Revisar archivo: ConexionOracle.cs
+- Cambiar si es necesario:
+  User Id
+  Password
+  Data Source
+
+Ejemplo:
+User Id=system;
+Password=1234;
+Data Source=localhost:1521/XEPDB1;
+
+4. EJECUCIÓN DEL SISTEMA:
+- Abrir solución en Visual Studio
+- Ejecutar el proyecto (F5)
+- El sistema se conectará automáticamente a la base de datos
+
+5. IMPORTANTE:
+- Todas las operaciones CRUD se realizan mediante procedimientos almacenados
+- NO se utilizan consultas SQL directas en el código
+
+6. POSIBLES ERRORES:
+- Verificar que Oracle esté corriendo
+- Verificar credenciales
+- Verificar puerto 1521
