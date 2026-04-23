@@ -1,46 +1,153 @@
-PROYECTO: MotoRepuestos CR S.A.
+PROYECTO FINAL
+MotoRepuestos CR S.A.
 
-INSTRUCCIONES DE EJECUCIÓN
+ARCHIVO: LEAME.txt
 
-1. REQUISITOS:
-- Oracle Database (XE recomendado)
-- SQL Developer o herramienta similar
-- Visual Studio (para la aplicación C#)
-- Oracle.ManagedDataAccess instalado
+DESCRIPCIÓN GENERAL
+Este proyecto corresponde al desarrollo de un sistema de gestión para MotoRepuestos CR S.A., orientado al manejo de productos, clientes, ventas, inventario, categorías, marcas, proveedores y empleados.
 
-2. BASE DE DATOS:
-- Ejecutar el archivo: script_completo.sql
-- Este archivo contiene:
-  * Creación de tablas
-  * Procedimientos almacenados
-  * Funciones
-  * Cursores
-  * Paquetes
-  * Triggers
-  * Vistas
+El proyecto incluye:
+- Modelo relacional de la base de datos
+- Script completo de base de datos
+- Procedimientos almacenados
+- Funciones
+- Cursores
+- Paquetes
+- Triggers
+- Vistas
+- Aplicación en C# con conexión a Oracle
 
-3. CONFIGURACIÓN DE CONEXIÓN:
-- Revisar archivo: ConexionOracle.cs
-- Cambiar si es necesario:
-  User Id
-  Password
-  Data Source
+=========================================================
+1. REQUISITOS NECESARIOS
+=========================================================
+
+Para ejecutar correctamente el proyecto se requiere lo siguiente:
+
+1. Oracle Database XE o una versión compatible de Oracle.
+2. Oracle SQL Developer o herramienta equivalente para ejecutar scripts SQL/PLSQL.
+3. Visual Studio para ejecutar la aplicación desarrollada en C#.
+4. Librerías Oracle Data Provider instaladas en el proyecto:
+   - Oracle.ManagedDataAccess
+   - Oracle.ManagedDataAccess.Client
+
+=========================================================
+2. ESTRUCTURA DEL PROYECTO
+=========================================================
+
+El repositorio contiene las siguientes carpetas y archivos principales:
+
+- tablas
+- procedimientos
+- funciones
+- cursores
+- paquetes
+- triggers
+- vistas
+- conexion
+- script_completo.sql
+- LEAME.txt
+
+La carpeta "conexion" contiene el proyecto de Visual Studio y la lógica de conexión a la base de datos Oracle.
+
+=========================================================
+3. INSTRUCCIONES PARA EJECUTAR LA BASE DE DATOS
+=========================================================
+
+1. Abrir Oracle SQL Developer.
+2. Conectarse al esquema donde se ejecutará el proyecto.
+3. Ejecutar el archivo:
+   script_completo.sql
+
+Este archivo contiene, en orden:
+- Eliminación opcional de objetos previos
+- Creación de tablas
+- Creación de secuencias
+- Inserción de datos básicos de apoyo
+- Procedimientos almacenados
+- Funciones
+- Cursores
+- Paquetes
+- Triggers
+- Vistas
+
+IMPORTANTE:
+El archivo "script_completo.sql" es el script oficial y consolidado para la ejecución del proyecto.
+Se recomienda ejecutar únicamente este archivo para evitar errores por inconsistencias entre scripts individuales.
+
+=========================================================
+4. INSTRUCCIONES PARA EJECUTAR LA APLICACIÓN
+=========================================================
+
+1. Abrir la carpeta "conexion" en Visual Studio.
+2. Abrir la solución:
+   MotoRepuestosCR.sln
+3. Verificar que las dependencias de Oracle estén instaladas.
+4. Revisar el archivo:
+   DAL/ConexionOracle.cs
+5. Confirmar o ajustar la cadena de conexión según la configuración local.
+6. Compilar y ejecutar el proyecto.
+
+=========================================================
+5. CONFIGURACIÓN DE LA CONEXIÓN
+=========================================================
+
+La clase de conexión utilizada por la aplicación es:
+ConexionOracle.cs
+
+La cadena de conexión actual es:
+
+User Id=system;Password=1234;Data Source=localhost:1521/XEPDB1;
+
+Si la base de datos local utiliza otro usuario, contraseña o servicio,
+debe modificarse esta cadena antes de ejecutar la aplicación.
 
 Ejemplo:
-User Id=system;
-Password=1234;
+User Id=USUARIO_PROYECTO;
+Password=CLAVE;
 Data Source=localhost:1521/XEPDB1;
 
-4. EJECUCIÓN DEL SISTEMA:
-- Abrir solución en Visual Studio
-- Ejecutar el proyecto (F5)
-- El sistema se conectará automáticamente a la base de datos
+=========================================================
+6. CONSIDERACIONES IMPORTANTES
+=========================================================
 
-5. IMPORTANTE:
-- Todas las operaciones CRUD se realizan mediante procedimientos almacenados
-- NO se utilizan consultas SQL directas en el código
+1. El proyecto está preparado para trabajar con ORACLE.
+2. Las operaciones del sistema deben ejecutarse mediante procedimientos almacenados.
+3. No se deben utilizar consultas SQL directas dentro del código de la aplicación.
+4. Los triggers implementados validan reglas de negocio como:
+   - stock suficiente
+   - precio válido
+   - stock no negativo
+5. Las vistas permiten consultar información resumida y reportes del sistema.
 
-6. POSIBLES ERRORES:
-- Verificar que Oracle esté corriendo
-- Verificar credenciales
-- Verificar puerto 1521
+=========================================================
+7. POSIBLES PROBLEMAS Y SOLUCIONES
+=========================================================
+
+Problema: No conecta con la base de datos.
+Solución:
+- Verificar que Oracle esté en ejecución.
+- Verificar usuario, contraseña y Data Source.
+- Verificar que el puerto 1521 esté disponible.
+
+Problema: Error al ejecutar el script.
+Solución:
+- Confirmar que se está usando Oracle.
+- Ejecutar el archivo "script_completo.sql" completo.
+- Revisar si existen objetos previos en el esquema.
+
+Problema: La aplicación no compila.
+Solución:
+- Verificar que Visual Studio tenga instaladas las referencias de Oracle.
+- Restaurar paquetes NuGet si es necesario.
+
+=========================================================
+8. OBSERVACIÓN FINAL
+=========================================================
+
+El proyecto fue organizado para que el docente pueda revisar:
+- la estructura de la base de datos,
+- la programación SQL y PL/SQL,
+- la integración con la aplicación,
+- y la ejecución general del sistema.
+
+FIN DEL ARCHIVO
