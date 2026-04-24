@@ -34,7 +34,7 @@ namespace MotoRepuestosCR
         {
             // FORM
             this.Text = "MotoRepuestosCR";
-            this.Size = new Size(900, 600);
+            this.Size = new Size(1132, 700);
             this.StartPosition = FormStartPosition.CenterScreen;
 
             // PANEL CONTENIDO
@@ -177,13 +177,56 @@ namespace MotoRepuestosCR
 
             panelGrid.Controls.Add(dgv);
 
-            dgv.Columns.Add("IdDetalle", "ID");
-            dgv.Columns.Add("Venta", "Venta");
-            dgv.Columns.Add("Producto", "Producto");
-            dgv.Columns.Add("Cantidad", "Cantidad");
-            dgv.Columns.Add("Precio", "Precio");
+            try 
+            {
+                using (var cn = new ConexionOracle().ObtenerConexion())
+                using (var cmd = new OracleCommand("MOTOREPUESTOSCR.SP_LISTAR_DETALLE_VENTA", cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.BindByName = true;
+                    cmd.Parameters.Add("p_resultado", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
 
-            dgv.Rows.Add("1", "Venta #1", "Cadena 428", "2", "12000");
+                    using (var da = new OracleDataAdapter(cmd))
+                    {
+                        var dt = new DataTable();
+                        da.Fill(dt);
+
+                        dgv.AutoGenerateColumns = true; 
+                        dgv.DataSource = dt; 
+
+                        if (dgv.Columns.Contains("ID_DETALLE")) dgv.Columns["ID_DETALLE"].HeaderText = "ID"; 
+                        if (dgv.Columns.Contains("ID_VENTA")) dgv.Columns["ID_VENTA"].HeaderText = "Venta"; 
+                        if (dgv.Columns.Contains("PRODUCTO")) dgv.Columns["PRODUCTO"].HeaderText = "Producto"; 
+                        if (dgv.Columns.Contains("CANTIDAD")) dgv.Columns["CANTIDAD"].HeaderText = "Cantidad"; 
+                        if (dgv.Columns.Contains("PRECIO")) dgv.Columns["PRECIO"].HeaderText = "Precio"; 
+
+                        foreach (DataGridViewColumn col in dgv.Columns)
+                        {
+                            if (col.Name != "ID_DETALLE" &&
+                                col.Name != "ID_VENTA" &&
+                                col.Name != "PRODUCTO" &&
+                                col.Name != "CANTIDAD" &&
+                                col.Name != "PRECIO")
+                            {
+                                col.Visible = false; 
+                            }
+                        }
+
+                        if (dgv.Columns.Count >= 5)
+                        {
+                            dgv.Columns[0].HeaderText = "ID";
+                            dgv.Columns[1].HeaderText = "Venta";
+                            dgv.Columns[2].HeaderText = "Producto";
+                            dgv.Columns[3].HeaderText = "Cantidad";
+                            dgv.Columns[4].HeaderText = "Precio";
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
 
             Panel panelForm = new Panel()
             {
@@ -212,6 +255,7 @@ namespace MotoRepuestosCR
 
                 TextBox txt = new TextBox()
                 {
+                    Name = "txt" + labelText.Replace(" ", ""), 
                     Width = 240,
                     Location = new Point(0, 25),
                     Font = new Font("Segoe UI", 10),
@@ -243,6 +287,53 @@ namespace MotoRepuestosCR
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
 
+            try 
+            {
+                using (var cn = new ConexionOracle().ObtenerConexion())
+                {
+                    // VENTAS
+                    using (var cmd = new OracleCommand("MOTOREPUESTOSCR.SP_LISTAR_VENTAS", cn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.Add("p_resultado", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
+
+                        var da = new OracleDataAdapter(cmd);
+                        var dt = new DataTable();
+                        da.Fill(dt);
+
+                        cmbVenta.DataSource = dt;
+
+                        cmbVenta.DisplayMember = "ID_VENTA"; 
+                        cmbVenta.Format += (s, e) => 
+                        {
+                            var row = (DataRowView)e.ListItem;
+                            e.Value = "Venta #" + row["ID_VENTA"]; 
+                        };
+
+                        cmbVenta.ValueMember = "ID_VENTA";
+                    }
+
+                    // PRODUCTOS
+                    using (var cmd = new OracleCommand("MOTOREPUESTOSCR.SP_LISTAR_PRODUCTOS", cn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.Add("p_resultado", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
+
+                        var da = new OracleDataAdapter(cmd);
+                        var dt = new DataTable();
+                        da.Fill(dt);
+
+                        cmbProducto.DataSource = dt;
+                        cmbProducto.DisplayMember = "NOMBRE";
+                        cmbProducto.ValueMember = "ID_PRODUCTO";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
             Panel contProducto = new Panel() { Width = 240, Height = 60, Top = 60, Left = 10 }; contProducto.Controls.Add(new Label() { Text = "Producto", Font = new Font("Segoe UI", 9, FontStyle.Bold), AutoSize = true });
             contProducto.Controls.Add(cmbProducto);
 
@@ -251,15 +342,47 @@ namespace MotoRepuestosCR
             panelForm.Controls.Add(CrearInput("Cantidad", 120));
 
             Button btnAgregar = new Button() { Text = "Agregar", Location = new Point(640, 370), Width = 80 };
-            Button btnEditar = new Button() { Text = "Editar", Location = new Point(730, 370), Width = 80 };
-            Button btnEliminar = new Button() { Text = "Eliminar", Location = new Point(820, 370), Width = 80 };
+
+            btnAgregar.Click += (s, e) => 
+            {
+                try
+                {
+                    var controles = panelForm.Controls.Find("txtCantidad", true); 
+
+                    if (controles.Length == 0) 
+                    {
+                        MessageBox.Show("No se encontró el campo Cantidad"); 
+                        return;
+                    }
+
+                    var txtCantidad = controles[0] as TextBox; 
+                    using (var cn = new ConexionOracle().ObtenerConexion())
+                    using (var cmd = new OracleCommand("MOTOREPUESTOSCR.SP_INSERTAR_DETALLE_VENTA", cn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.BindByName = true;
+
+                        cmd.Parameters.Add("p_id_venta", OracleDbType.Int32).Value = Convert.ToInt32(cmbVenta.SelectedValue); 
+                        cmd.Parameters.Add("p_id_producto", OracleDbType.Int32).Value = Convert.ToInt32(cmbProducto.SelectedValue); 
+                        cmd.Parameters.Add("p_cantidad", OracleDbType.Int32).Value = Convert.ToInt32(txtCantidad.Text); 
+                        cmd.Parameters.Add("p_precio", OracleDbType.Decimal).Value = 0; 
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    MessageBox.Show("Detalle agregado (stock actualizado automáticamente)"); 
+
+                    CargarVistaDetalleVenta(); // refresca
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            };
 
             panelContenido.Controls.Add(panelTitulo);
             panelContenido.Controls.Add(panelGrid);
             panelContenido.Controls.Add(panelForm);
             panelContenido.Controls.Add(btnAgregar);
-            panelContenido.Controls.Add(btnEditar);
-            panelContenido.Controls.Add(btnEliminar);
         }
 
 
@@ -1033,7 +1156,6 @@ namespace MotoRepuestosCR
             {
                 Text = "Gestión de Ventas",
                 Font = new Font("Segoe UI", 18, FontStyle.Bold),
-                ForeColor = Color.FromArgb(30, 30, 30),
                 Location = new Point(15, 7),
                 AutoSize = true
             };
@@ -1044,25 +1166,17 @@ namespace MotoRepuestosCR
                 Font = new Font("Segoe UI", 9),
                 ForeColor = Color.Gray,
                 Location = new Point(17, 42),
-                AutoSize = false,
                 Width = 400
-            };
-
-            Panel linea = new Panel()
-            {
-                Height = 1,
-                Dock = DockStyle.Bottom,
-                BackColor = Color.FromArgb(220, 220, 220)
             };
 
             panelTitulo.Controls.Add(titulo);
             panelTitulo.Controls.Add(subtitulo);
-            panelTitulo.Controls.Add(linea);
 
             Panel panelGrid = new Panel()
             {
                 Location = new Point(20, 90),
-                Size = new Size(600, 270),
+                Size = new Size(panelContenido.Width - 300, 270),
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
                 BackColor = Color.FromArgb(245, 245, 245),
                 BorderStyle = BorderStyle.FixedSingle
             };
@@ -1070,47 +1184,45 @@ namespace MotoRepuestosCR
             DataGridView dgv = new DataGridView()
             {
                 Dock = DockStyle.Fill,
-                BackgroundColor = Color.White,
-                BorderStyle = BorderStyle.None,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                RowHeadersVisible = false,
-                AllowUserToAddRows = false,
-                EnableHeadersVisualStyles = false,
-                GridColor = Color.LightGray,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 MultiSelect = false
             };
 
-            // HEADER
-            dgv.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(60, 60, 60);
-            dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
-            dgv.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(60, 60, 60);
-            dgv.ColumnHeadersDefaultCellStyle.SelectionForeColor = Color.White;
-            dgv.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            dgv.ColumnHeadersHeight = 35;
-
-            // FILAS
-            dgv.DefaultCellStyle.Font = new Font("Segoe UI", 10);
-            dgv.DefaultCellStyle.SelectionBackColor = Color.FromArgb(220, 220, 220);
-            dgv.DefaultCellStyle.SelectionForeColor = Color.Black;
-
-            // ALTURA
-            dgv.RowTemplate.Height = 28;
-
-            // BORDES
-            dgv.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-            dgv.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
-
             panelGrid.Controls.Add(dgv);
 
-            dgv.Columns.Add("Id", "ID");
-            dgv.Columns.Add("Fecha", "Fecha");
-            dgv.Columns.Add("Cliente", "Cliente");
-            dgv.Columns.Add("Empleado", "Empleado");
+            //  LISTAR
+            try
+            {
+                using (var cn = new ConexionOracle().ObtenerConexion())
+                using (var cmd = new OracleCommand("MOTOREPUESTOSCR.SP_LISTAR_VENTAS", cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add("p_resultado", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
 
-            dgv.Rows.Add("1", "21/04/2026", "Juan Pérez", "Carlos Mora");
-            dgv.Rows.Add("2", "22/04/2026", "María López", "Ana Pérez");
+                    using (var da = new OracleDataAdapter(cmd))
+                    {
+                        var dt = new DataTable();
+                        da.Fill(dt);
 
+                        dgv.DataSource = dt;
+
+                        if (dgv.Columns.Count >= 4)
+                        {
+                            dgv.Columns[0].HeaderText = "ID";
+                            dgv.Columns[1].HeaderText = "Fecha";
+                            dgv.Columns[2].HeaderText = "Cliente";
+                            dgv.Columns[3].HeaderText = "Empleado";
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+            //  FORM
             Panel panelForm = new Panel()
             {
                 Location = new Point(640, 90),
@@ -1118,52 +1230,146 @@ namespace MotoRepuestosCR
                 BackColor = Color.FromArgb(245, 245, 245)
             };
 
-            Panel CrearInput(string labelText, int top)
+            DateTimePicker dtFecha = new DateTimePicker()
             {
-                Panel cont = new Panel()
+                Name = "dtFecha",
+                Width = 240,
+                Location = new Point(10, 25)
+            };
+
+            ComboBox cbCliente = new ComboBox()
+            {
+                Name = "cbCliente",
+                Width = 240,
+                Location = new Point(10, 85),
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+
+            ComboBox cbEmpleado = new ComboBox()
+            {
+                Name = "cbEmpleado",
+                Width = 240,
+                Location = new Point(10, 145),
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+
+            panelForm.Controls.Add(new Label() { Text = "Fecha", Top = 0, Left = 10 });
+            panelForm.Controls.Add(dtFecha);
+
+            panelForm.Controls.Add(new Label() { Text = "Cliente", Top = 60, Left = 10 });
+            panelForm.Controls.Add(cbCliente);
+
+            panelForm.Controls.Add(new Label() { Text = "Empleado", Top = 120, Left = 10 });
+            panelForm.Controls.Add(cbEmpleado);
+
+            //  CARGAR COMBOS
+            try
+            {
+                using (var cn = new ConexionOracle().ObtenerConexion())
                 {
-                    Width = 240,
-                    Height = 60,
-                    Top = top,
-                    Left = 10
-                };
+                    // CLIENTES
+                    using (var cmd = new OracleCommand("MOTOREPUESTOSCR.SP_LISTAR_CLIENTES", cn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.Add("p_resultado", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
 
-                Label lbl = new Label()
-                {
-                    Text = labelText,
-                    Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                    Location = new Point(0, 0),
-                    AutoSize = true
-                };
+                        var da = new OracleDataAdapter(cmd);
+                        var dt = new DataTable();
+                        da.Fill(dt);
 
-                TextBox txt = new TextBox()
-                {
-                    Width = 240,
-                    Location = new Point(0, 25),
-                    Font = new Font("Segoe UI", 10),
-                    BorderStyle = BorderStyle.FixedSingle
-                };
+                        cbCliente.DataSource = dt;
+                        cbCliente.DisplayMember = "NOMBRE";
+                        cbCliente.ValueMember = "ID_CLIENTE";
+                    }
 
-                cont.Controls.Add(lbl);
-                cont.Controls.Add(txt);
+                    // EMPLEADOS
+                    using (var cmd = new OracleCommand("MOTOREPUESTOSCR.SP_LISTAR_EMPLEADOS", cn)) 
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure; 
+                        cmd.BindByName = true; 
+                        cmd.Parameters.Add("p_resultado", OracleDbType.RefCursor).Direction = ParameterDirection.Output; 
 
-                return cont;
+                        using (var da = new OracleDataAdapter(cmd))
+                        {
+                            var dt = new DataTable();
+                            da.Fill(dt);
+
+                            cbEmpleado.DataSource = dt; 
+                            cbEmpleado.DisplayMember = "NOMBRE"; 
+                            cbEmpleado.ValueMember = "ID_EMPLEADO"; 
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
 
-            panelForm.Controls.Add(CrearInput("Fecha", 0));
-            panelForm.Controls.Add(CrearInput("Cliente", 60));
-            panelForm.Controls.Add(CrearInput("Total", 120));
+            Button btnAgregar = new Button() { Text = "Agregar", Location = new Point(40, 200) }; 
+            Button btnEliminar = new Button() { Text = "Eliminar", Location = new Point(140, 200) }; 
 
-            Button btnAgregar = new Button() { Text = "Agregar", Location = new Point(640, 350), Width = 80 };
-            Button btnEditar = new Button() { Text = "Editar", Location = new Point(730, 350), Width = 80 };
-            Button btnEliminar = new Button() { Text = "Eliminar", Location = new Point(820, 350), Width = 80 };
+            btnAgregar.Click += (s, e) =>
+            {
+                try
+                {
+                    using (var cn = new ConexionOracle().ObtenerConexion())
+                    using (var cmd = new OracleCommand("MOTOREPUESTOSCR.SP_INSERTAR_VENTA", cn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+
+                        cmd.Parameters.Add("p_fecha", dtFecha.Value);
+                        cmd.Parameters.Add("p_id_cliente", cbCliente.SelectedValue);
+                        cmd.Parameters.Add("p_id_empleado", cbEmpleado.SelectedValue);
+
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    MessageBox.Show("Venta agregada");
+                    CargarVistaVentas();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            };
+
+          
+            btnEliminar.Click += (s, e) =>
+            {
+                if (dgv.CurrentRow == null) return;
+
+                if (MessageBox.Show("¿Eliminar venta?", "Confirmar", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                    return;
+
+                try
+                {
+                    int id = Convert.ToInt32(dgv.CurrentRow.Cells[0].Value);
+
+                    using (var cn = new ConexionOracle().ObtenerConexion())
+                    using (var cmd = new OracleCommand("MOTOREPUESTOSCR.SP_ELIMINAR_VENTA", cn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.Add("p_id_venta", id);
+
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    MessageBox.Show("Venta eliminada");
+                    CargarVistaVentas();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            };
+
+            panelForm.Controls.Add(btnAgregar);
+            panelForm.Controls.Add(btnEliminar);
 
             panelContenido.Controls.Add(panelTitulo);
             panelContenido.Controls.Add(panelGrid);
             panelContenido.Controls.Add(panelForm);
-            panelContenido.Controls.Add(btnAgregar);
-            panelContenido.Controls.Add(btnEditar);
-            panelContenido.Controls.Add(btnEliminar);
         }
 
         private void CargarVistaInicio()
