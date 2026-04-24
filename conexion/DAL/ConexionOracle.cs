@@ -1,4 +1,5 @@
 ﻿using Oracle.ManagedDataAccess.Client;
+using System.Configuration;
 
 namespace MotoRepuestosCR.DAL
 {
@@ -8,9 +9,10 @@ namespace MotoRepuestosCR.DAL
 
         public OracleConnection ObtenerConexion()
         {
-            OracleConnection cn = new OracleConnection(cadenaConexion);
-            cn.Open();
-            return cn;
+            string connectionString = cadenaConexion;  
+            OracleConnection cn = new OracleConnection(connectionString);  
+            cn.Open();  
+            return cn;  
         }
     }
 }
